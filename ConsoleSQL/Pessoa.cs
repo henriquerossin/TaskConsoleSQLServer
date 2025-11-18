@@ -30,9 +30,13 @@ namespace ConsoleSQL
 
         public override string? ToString()
         {
-            return $"Id: {Id}\nNome: {Nome}\n Cpf: {Cpf}\n Data de Nascimento: {DataNascimento}" +
-                $"\nTelefones: \n{string.Join("\n", Telefones.Select(x => x.ToString()))}" +
-                $"\nEnderecos: \n{string.Join("\n", Enderecos.Select(x => x.ToString()))}";
+            return $"Id: {Id}\nNome: {Nome}" +
+                $"\n Cpf: {Cpf}" +
+                $"\n Data de Nascimento: {DataNascimento}" +
+                $"\nTelefones: " +
+                $"\n{string.Join("\n", Telefones.Select(x => x.ToString()))}" +
+                $"\nEnderecos: " +
+                $"\n{string.Join("\n", Enderecos.Select(x => x.ToString()))}";
         }
     }
 }

@@ -24,7 +24,8 @@ namespace ConsoleSQL
 
         public override string ToString()
         {
-            return $"({Ddd}){Numero}\nTipo: {Tipo}";
+            return $"({Ddd}){Numero}" +
+                $"\nTipo: {Tipo}";
         }
     }
 }

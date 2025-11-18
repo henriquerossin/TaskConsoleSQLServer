@@ -35,7 +35,8 @@
 
         public override string? ToString()
         {
-            return $"{Logradouro}, N{Numero} {Complemento}\n{Bairro}, {Cidade}, {Estado}, CEP: {Cep}.";
+            return $"{Logradouro}, N{Numero} {Complemento}" +
+                $"\n{Bairro}, {Cidade}, {Estado}, CEP: {Cep}.";
         }
     }
 }

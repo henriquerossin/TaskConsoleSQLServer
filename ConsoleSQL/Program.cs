@@ -8,16 +8,18 @@ namespace ConsoleSQL
         {
             var connection = new SqlConnection(DBConnection.GetConnectionString());
 
+            #region Create
             //CRUD - Create
 
-            var pessoa = new Pessoa("Gabriela Freijó", "12345", new DateOnly(1990, 5, 20));
+            /*
+            connection.Open();
 
-            var sqlInsertPessoa = 
+            var pessoa = new Pessoa("Pocoyo violento", "666", new DateOnly(2002, 4, 9));
+
+            var sqlInsertPessoa =
                 $"INSERT INTO Pessoas (nome, cpf, dataNascimento) " +
                 $"VALUES (@Nome, @CPF, @DataNascimento);" +
                 $"SELECT SCOPE_IDENTITY();";
-
-            connection.Open();
 
             var command = new SqlCommand(sqlInsertPessoa, connection);
 
@@ -25,34 +27,82 @@ namespace ConsoleSQL
             command.Parameters.AddWithValue("@CPF", pessoa.Cpf);
             command.Parameters.AddWithValue("@DataNascimento", pessoa.DataNascimento);
 
-            //int pessoaId = Convert.ToInt32(command.ExecuteScalar());
+            int pessoaId = Convert.ToInt32(command.ExecuteScalar());
 
-            //var telefone = new Telefone("11", "987654321", "Celular", pessoaId);
+            var telefone = new Telefone("11", "987654321", "Celular", pessoaId);
 
-            //var sqlInsertTelefone =                 
-                //$"INSERT INTO Telefones (ddd, numero, tipo, pessoaId) " +
-                //$"VALUES (@Ddd, @Numero, @Tipo, @PessoaId)";
+            var sqlInsertTelefone =
+                $"INSERT INTO Telefones (ddd, numero, tipo, pessoaId) " +
+                $"VALUES (@Ddd, @Numero, @Tipo, @PessoaId)";
 
-            //command = new SqlCommand(sqlInsertTelefone, connection);
-            //command.Parameters.AddWithValue("@Ddd", telefone.Ddd);
-            //command.Parameters.AddWithValue("@Numero", telefone.Numero);
-            //command.Parameters.AddWithValue("@Tipo", telefone.Tipo);
-            //command.Parameters.AddWithValue("@PessoaId", telefone.PessoaId);
+            command = new SqlCommand(sqlInsertTelefone, connection);
+            command.Parameters.AddWithValue("@Ddd", telefone.Ddd);
+            command.Parameters.AddWithValue("@Numero", telefone.Numero);
+            command.Parameters.AddWithValue("@Tipo", telefone.Tipo);
+            command.Parameters.AddWithValue("@PessoaId", telefone.PessoaId);
 
-            //command.ExecuteNonQuery();
+            command.ExecuteNonQuery();
+
+            var endereco = new Endereco(
+                "Rua dos Cria",
+                666,
+                "Casa dos Guri", 
+                "Liúrnia dos Lagos", 
+                "Caelid",
+                "ER",
+                "1234567890",
+                pessoaId);
+
+            var sqlInsertEndereco = 
+                $"INSERT INTO Enderecos " +
+                $"VALUES (@logradouro, @numero, @complemento, @bairro," +
+                $"@cidade, @estado, @cep, @PessoaId)";
+
+            command = new SqlCommand(sqlInsertEndereco, connection);
+            command.Parameters.AddWithValue("@logradouro", endereco.Logradouro);
+            command.Parameters.AddWithValue("@numero", endereco.Numero);
+            command.Parameters.AddWithValue("@complemento", endereco.Complemento);
+            command.Parameters.AddWithValue("@bairro", endereco.Bairro);
+            command.Parameters.AddWithValue("@cidade", endereco.Cidade);
+            command.Parameters.AddWithValue("@estado", endereco.Estado);
+            command.Parameters.AddWithValue("@cep", endereco.Cep);
+            command.Parameters.AddWithValue("@PessoaId", endereco.PessoaId);
+
+            command.ExecuteNonQuery();
 
             connection.Close();
+            */
+            #endregion
 
+            #region Read
             //CRUD - Read
 
+            /*
             connection.Open();
 
-            var sqlSelectPessoas = 
-                $"select * from Pessoas p" +
-                $"\nLEFT JOIN Telefones t" +
-                $"\nON p.id = t.pessoaId";
+            var sqlSelectPessoas =
+                "select " +
+                "p.id, " +
+                "p.nome, " +
+                "p.cpf, " +
+                "p.dataNascimento, " +
+                "e.logradouro, " +
+                "e.numero, " +
+                "e.complemento, " +
+                "e.bairro, " +
+                "e.cidade, " +
+                "e.estado, " +
+                "e.cep, " +
+                "t.ddd, " +
+                "t.numero, " +
+                "t.tipo " +
+                "from Pessoas p " +
+                "LEFT JOIN Enderecos e " +
+                "ON e.pessoaId = p.id " +
+                "LEFT JOIN Telefones t " +
+                "ON p.id = t.pessoaId ";
 
-            command = new SqlCommand(sqlSelectPessoas, connection);
+            var command = new SqlCommand(sqlSelectPessoas, connection);
 
             var reader = command.ExecuteReader();
 
@@ -64,41 +114,58 @@ namespace ConsoleSQL
 
                 var pessoaExistente = pessoaLida.FirstOrDefault(x => x.Id == id);
 
-                var telefone = new Telefone(
-                    reader.GetString(5),
-                    reader.GetString(6),
-                    reader.GetString(7),
-                    reader.GetInt32(8)
-                );
-
-                if (pessoaExistente is not null)
-                {
-                    pessoaExistente.Telefones.Add(telefone);
-                    continue;
-                }
-
                 var novaPessoa = new Pessoa(
                     reader.GetString(1),
                     reader.GetString(2),
                     DateOnly.FromDateTime(reader.GetDateTime(3))
                 );
 
+                var endereco = new Endereco(
+                reader.GetString(4),
+                reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                reader.IsDBNull(6) ? "" : reader.GetString(6),
+                reader.GetString(7),
+                reader.GetString(8),
+                reader.GetString(9),
+                reader.GetString(10),
+                id);
+
+                var telefone = new Telefone(
+                reader.GetString(11),
+                reader.GetString(12),
+                reader.GetString(13),
+                id);
+
+                if (pessoaExistente is not null)
+                {
+                    pessoaExistente.Telefones.Add(telefone);
+                    pessoaExistente.Enderecos.Add(endereco);
+                    continue;
+                }
+
                 novaPessoa.SetId(id);
+                
                 novaPessoa.Telefones.Add(telefone);
 
-                pessoaLida.Add(novaPessoa);
+                novaPessoa.Enderecos.Add(endereco);
 
+                pessoaLida.Add(novaPessoa);
             }
-                foreach (var p in pessoaLida)
+
+            foreach (var p in pessoaLida)
             {
                 Console.WriteLine(p);
                 Console.WriteLine("------------");
             }
 
             connection.Close();
+            */
+            #endregion
 
+            #region Update
             //CRUD - Update
 
+            /*
             connection.Open();
 
             var sqlUpdatePessoa = "UPDATE Pessoas SET nome = @Nome WHERE id = @Id";
@@ -107,12 +174,16 @@ namespace ConsoleSQL
             command.Parameters.AddWithValue("@Nome", "Teste Silva");
             command.Parameters.AddWithValue("@Id", 1);
 
-            //command.ExecuteNonQuery();
+            command.ExecuteNonQuery();
 
             connection.Close();
+            */
+            #endregion
 
+            #region Delete
             //CRUD - Delete
 
+            /*
             connection.Open();
 
             var sqlDeletePessoa = "DELETE FROM Pessoas WHERE id = @Id";
@@ -120,60 +191,11 @@ namespace ConsoleSQL
             command = new SqlCommand(sqlDeletePessoa, connection);
             command.Parameters.AddWithValue("@Id", 5);
 
-            //command.ExecuteNonQuery();
+            command.ExecuteNonQuery();
 
             connection.Close();
-
-            /*
-             
-            //CRUD - Read
-
-            connection.Open();
-
-            // var sqlSelectPessoas = "SELECT id, nome, cpf, dataNascimento FROM Pessoas";
-            var sqlSelectPessoas = 
-                $"select * from Pessoas p" +
-                $"\r\nLEFT JOIN Telefones t" +
-                $"\r\nON p.id = t.pessoaId";
-
-            command = new SqlCommand(sqlSelectPessoas, connection);
-
-            var reader = command.ExecuteReader();
-
-            var pessoaLida = new List<Pessoa>();
-
-            while (reader.Read())
-            {
-                var telefone = new Telefone(
-                    reader.GetString(5),
-                    reader.GetString(6),
-                    reader.GetString(7),
-                    reader.GetInt32(8)
-                );
-
-                if (pessoaLida.Where(x => x.Id == reader.GetInt32(0)).Any())
-                {
-                    var pessoa = pessoaLida.Find(x => x.Id == reader.GetInt32(0));
-                    pessoa.Telefones.Add(telefones.Last());
-                    continue;
-                }
-
-                pessoaLida.Add( new Pessoa(
-                    reader.GetString(1),
-                    reader.GetString(2),
-                    DateOnly.FromDateTime(reader.GetDateTime(3))
-                ));
-                pessoaLida.SetId(reader.GetInt32(0));
-
-                
-                pessoaLida.Telefones.Add(telefone);
-
-                Console.WriteLine(pessoaLida);
-                //Console.WriteLine(telefone);
-            }
-             
-             */
-
+            */
+            #endregion
         }
     }
 }

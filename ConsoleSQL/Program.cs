@@ -47,24 +47,22 @@ namespace ConsoleSQL
 
             connection.Open();
 
-            // var sqlSelectPessoas = "SELECT id, nome, cpf, dataNascimento FROM Pessoas";
             var sqlSelectPessoas = 
                 $"select * from Pessoas p" +
-                $"\r\nLEFT JOIN Telefones t" +
-                $"\r\nON p.id = t.pessoaId";
+                $"\nLEFT JOIN Telefones t" +
+                $"\nON p.id = t.pessoaId";
 
             command = new SqlCommand(sqlSelectPessoas, connection);
 
             var reader = command.ExecuteReader();
 
+            List<Pessoa> pessoaLida = new List<Pessoa>();
+
             while (reader.Read())
             {
-                var pessoaLida = new Pessoa(
-                    reader.GetString(1),
-                    reader.GetString(2),
-                    DateOnly.FromDateTime(reader.GetDateTime(3))
-                );
-                pessoaLida.SetId(reader.GetInt32(0));
+                int id = reader.GetInt32(0);
+
+                var pessoaExistente = pessoaLida.FirstOrDefault(x => x.Id == id);
 
                 var telefone = new Telefone(
                     reader.GetString(5),
@@ -73,8 +71,28 @@ namespace ConsoleSQL
                     reader.GetInt32(8)
                 );
 
-                Console.WriteLine(pessoaLida);
-                Console.WriteLine(telefone);
+                if (pessoaExistente is not null)
+                {
+                    pessoaExistente.Telefones.Add(telefone);
+                    continue;
+                }
+
+                var novaPessoa = new Pessoa(
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    DateOnly.FromDateTime(reader.GetDateTime(3))
+                );
+
+                novaPessoa.SetId(id);
+                novaPessoa.Telefones.Add(telefone);
+
+                pessoaLida.Add(novaPessoa);
+
+            }
+                foreach (var p in pessoaLida)
+            {
+                Console.WriteLine(p);
+                Console.WriteLine("------------");
             }
 
             connection.Close();
@@ -105,6 +123,57 @@ namespace ConsoleSQL
             //command.ExecuteNonQuery();
 
             connection.Close();
+
+            /*
+             
+            //CRUD - Read
+
+            connection.Open();
+
+            // var sqlSelectPessoas = "SELECT id, nome, cpf, dataNascimento FROM Pessoas";
+            var sqlSelectPessoas = 
+                $"select * from Pessoas p" +
+                $"\r\nLEFT JOIN Telefones t" +
+                $"\r\nON p.id = t.pessoaId";
+
+            command = new SqlCommand(sqlSelectPessoas, connection);
+
+            var reader = command.ExecuteReader();
+
+            var pessoaLida = new List<Pessoa>();
+
+            while (reader.Read())
+            {
+                var telefone = new Telefone(
+                    reader.GetString(5),
+                    reader.GetString(6),
+                    reader.GetString(7),
+                    reader.GetInt32(8)
+                );
+
+                if (pessoaLida.Where(x => x.Id == reader.GetInt32(0)).Any())
+                {
+                    var pessoa = pessoaLida.Find(x => x.Id == reader.GetInt32(0));
+                    pessoa.Telefones.Add(telefones.Last());
+                    continue;
+                }
+
+                pessoaLida.Add( new Pessoa(
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    DateOnly.FromDateTime(reader.GetDateTime(3))
+                ));
+                pessoaLida.SetId(reader.GetInt32(0));
+
+                
+                pessoaLida.Telefones.Add(telefone);
+
+                Console.WriteLine(pessoaLida);
+                //Console.WriteLine(telefone);
+            }
+             
+             */
+
         }
     }
 }

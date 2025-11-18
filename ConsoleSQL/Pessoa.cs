@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Azure.Core.HttpHeader;
 
 namespace ConsoleSQL
 {
@@ -28,7 +29,9 @@ namespace ConsoleSQL
 
         public override string? ToString()
         {
-            return $"Id: {Id}\n Nome: {Nome}\n Cpf: {Cpf}\n Data de Nascimento: {DataNascimento}";
+
+
+            return $"Id: {Id}\n Nome: {Nome}\n Cpf: {Cpf}\n Data de Nascimento: {DataNascimento}\nTelefones: \n{string.Join("\n", Telefones.Select(x => x.ToString()))}";
         }
     }
 }

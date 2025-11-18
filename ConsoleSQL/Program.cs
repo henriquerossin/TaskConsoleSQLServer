@@ -4,9 +4,9 @@ namespace ConsoleSQL
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var connection = new SqlConnection(DBConnection.GetConnectionString());
+            using var connection = new SqlConnection(DBConnection.GetConnectionString());
 
             #region Create
             //CRUD - Create
